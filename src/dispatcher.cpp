@@ -174,29 +174,37 @@ bool Dispatcher::has_something_to_dispatch()
 
 void Dispatcher::dispatch_pending()
 {
-	_mutex_p.lock();
-
-	// SEEME: dbus-glib is dispatching only one message at a time to not starve the loop/other things...
-
-	while (_pending_queue.size() > 0)
+	while (1)
 	{
-		Connection::PrivatePList::iterator i, j;
-		
-		i = _pending_queue.begin();
+		_mutex_p.lock();
+	        bool queue_empty = _pending_queue.size() <= 0;
+		_mutex_p.unlock();
 
-		while (i != _pending_queue.end())
+		if ( queue_empty ) return;
+
+		Connection::Private *entry = NULL;
+
+		_mutex_p.lock();
+		Connection::PrivatePList::iterator i =  _pending_queue.begin();
+		if (i != _pending_queue.end())
 		{
-			j = i; 
-			
-			++j;
-
-			if ((*i)->do_dispatch())
-				_pending_queue.erase(i);
-
-			i = j;
+			entry = *i;
+			_pending_queue.erase(i);
 		}
+		_mutex_p.unlock();
+
+		if ( entry == NULL ) return;
+
+		if ( entry->do_dispatch() ) // there is no more data
+		{
+			// delete entry;
+			// A leak???
+			return;
+		}
+
+		// There is more data - queue connection again
+		queue_connection( entry );
 	}
-	_mutex_p.unlock();
 }
 
 void DBus::_init_threading()
