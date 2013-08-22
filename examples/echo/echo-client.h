@@ -3,6 +3,7 @@
 
 #include <dbus-c++/dbus.h>
 #include "echo-client-glue.h"
+#include <cstdio>
 
 class EchoClient
 : public org::freedesktop::DBus::EchoDemo_proxy,
