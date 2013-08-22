@@ -18,6 +18,7 @@ Patch1:	dbus-c++-get-uid-api.patch
 Patch2: gcc-44.patch
 Patch3: dbus-c++-build-fix.patch
 Patch4: dbus-c++-linkfix.patch
+Patch5: dispatcher-deadlock-fix.patch
 
 BuildRequires:	dbus-devel
 BuildRequires:	glib2-devel
@@ -46,6 +47,7 @@ developing applications that use %{name}.
 %patch2 -p1 -b .gcc44
 %patch3 -p1 -b .buildfix
 %patch4 -p1 -b .linkfix
+%patch5 -p1 -b .deadlockfix
 
 %build
 ./autogen.sh
