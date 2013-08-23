@@ -182,28 +182,26 @@ void Dispatcher::dispatch_pending()
 
 		if ( queue_empty ) return;
 
-		Connection::Private *entry = NULL;
+		Connection::PrivatePList q;
 
 		_mutex_p.lock();
-		Connection::PrivatePList::iterator i =  _pending_queue.begin();
-		if (i != _pending_queue.end())
-		{
-			entry = *i;
-			_pending_queue.erase(i);
-		}
+	        q = _pending_queue;
+		_pending_queue.clear();
 		_mutex_p.unlock();
 
-		if ( entry == NULL ) return;
+		Connection::PrivatePList::iterator i;
 
-		if ( entry->do_dispatch() ) // there is no more data
+		for ( i = q.begin() ; i != q.end() ; ++i )
 		{
-			// delete entry;
-			// A leak???
-			return;
-		}
+			Connection::Private *entry = *i;
 
-		// There is more data - queue connection again
-		queue_connection( entry );
+			if ( entry->do_dispatch() ) // there is no more data
+			{
+				continue;
+			}
+
+			queue_connection( entry );
+		}
 	}
 }
 
